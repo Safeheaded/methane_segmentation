@@ -11,17 +11,10 @@ class RoboflowClient:
         
         self.rf = Roboflow(api_key=self.api_key)
         
-    def getDataset(self):
+    def getDataset(self, version: str, overwrite: bool = False):
         project = self.rf.workspace("automatic-and-robotic").project("segmentacja-terenow")
-
-        dataset = project.version('1').download("coco")
-
-        target_folder = f"datasets/"
-
-        # Tworzenie folderu, jeśli nie istnieje
-        os.makedirs(target_folder, exist_ok=True)
-
-        # Przenoszenie plików
-        shutil.move(dataset.location, target_folder)
+        location = os.path.join(os.getcwd(), "datasets", project.name + "--" + version)
+        dataset = project.version(version).download(
+            "coco-segmentation", location=location, overwrite=overwrite)
 
         return dataset
