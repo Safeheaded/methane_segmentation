@@ -11,12 +11,12 @@ class RoboflowClient:
         
         self.rf = Roboflow(api_key=self.api_key)
         
-    def getDataset(self, dataset_id):
+    def getDataset(self):
         project = self.rf.workspace("automatic-and-robotic").project("segmentacja-terenow")
 
         dataset = project.version('1').download("coco")
 
-        target_folder = f"datasets/{dataset.name}"
+        target_folder = f"datasets/"
 
         # Tworzenie folderu, jeśli nie istnieje
         os.makedirs(target_folder, exist_ok=True)

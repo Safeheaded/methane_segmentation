@@ -8,7 +8,7 @@ def main():
     print("Connecting to roboflow...")
     roboflow = RoboflowClient()
     print("Connected to roboflow")
-    roboflow.getDataset("dataset_id")
+    roboflow.getDataset()
 
 if __name__ == "__main__":
     main()
