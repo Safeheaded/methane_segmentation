@@ -3,8 +3,8 @@ from lightning.pytorch import Trainer
 from terrain_segmentation.roboflow import RoboflowClient
 from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
 from terrain_segmentation.models.default_model import YOLOv5SegmentationModel
-import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
+# import ssl
+# ssl._create_default_https_context = ssl._create_unverified_context
 
 load_dotenv()
 

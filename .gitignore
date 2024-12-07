@@ -383,3 +383,6 @@ $RECYCLE.BIN/
 
 datasets
 lightning_logs
+
+*.pt
+runs
