@@ -389,3 +389,4 @@ lightning_logs
 *.pt
 *.pth
 runs
+trained_models
