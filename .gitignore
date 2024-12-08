@@ -385,4 +385,5 @@ datasets
 lightning_logs
 
 *.pt
+*.pth
 runs
