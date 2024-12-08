@@ -384,6 +384,8 @@ $RECYCLE.BIN/
 datasets
 lightning_logs
 
+!terrain_segmentation/datasets
+
 *.pt
 *.pth
 runs
