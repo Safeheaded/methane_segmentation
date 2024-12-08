@@ -7,8 +7,8 @@ def main():
     model_path = "yolov5_segmentation_model3.pth"
     model = YOLOv5SegmentationModel(1, T_MAX=2*15)
     model.load_state_dict(torch.load(model_path))
-    test_dataset = DefaultDataset("datasets/Segmentacja terenów --1/test/images", "datasets/Segmentacja terenów --1/test/labels")
-    first_image, first_mask = test_dataset[0]
+    test_dataset = DefaultDataset("datasets/Segmentacja terenów --1/valid/images", "datasets/Segmentacja terenów --1/valid/labels")
+    first_image, first_mask = test_dataset[2]
     with torch.no_grad():
         first_image = first_image.unsqueeze(0)  # Dodaj wymiar batch
         prediction = model(first_image)
