@@ -4,7 +4,7 @@ import torchmetrics
 import segmentation_models_pytorch as smp
 from torch.optim import lr_scheduler
 
-class YOLOv5SegmentationModel(pl.LightningModule):
+class DefaultSegmentationModel(pl.LightningModule):
     def __init__(self, num_classes, input_channels=3, learning_rate=1e-3, encoder_name="resnet34", T_MAX=100):
         super().__init__()
         self.T_MAX = T_MAX
@@ -83,7 +83,6 @@ class YOLOv5SegmentationModel(pl.LightningModule):
                 "frequency": 1,
             },
         }
-        return
     
     def shared_step(self, batch):
         inputs, labels = batch
@@ -91,6 +90,7 @@ class YOLOv5SegmentationModel(pl.LightningModule):
         outputs = outputs.squeeze(1)
 
         loss = self.loss_function(outputs, labels.float())
+        self.log("metrics/batch/loss", loss, prog_bar=True)
 
         prob_mask =  outputs.sigmoid()
         pred_mask = (prob_mask > 0.5).float()
@@ -120,15 +120,18 @@ class YOLOv5SegmentationModel(pl.LightningModule):
             tp, fp, fn, tn, reduction="micro-imagewise"
         )
 
+        self.log(f"metrics/epoch/{stage}/per_image_iou", per_image_iou, prog_bar=True)
+
         # dataset IoU means that we aggregate intersection and union over whole dataset
         # and then compute IoU score. The difference between dataset_iou and per_image_iou scores
         # in this particular case will not be much, however for dataset
         # with "empty" images (images without target class) a large gap could be observed.
         # Empty images influence a lot on per_image_iou and much less on dataset_iou.
         dataset_iou = smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro")
-        metrics = {
-            f"{stage}_per_image_iou": per_image_iou,
-            f"{stage}_dataset_iou": dataset_iou,
-        }
+        self.log(f"metrics/epoch/{stage}/dataset_iou", dataset_iou, prog_bar=True)
+        # metrics = {
+        #     f"{stage}_per_image_iou": per_image_iou,
+        #     f"{stage}_dataset_iou": dataset_iou,
+        # }
 
-        self.log_dict(metrics, prog_bar=True)
+        # self.log_dict(metrics, prog_bar=True)

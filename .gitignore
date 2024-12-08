@@ -390,3 +390,4 @@ lightning_logs
 *.pth
 runs
 trained_models
+.neptune
