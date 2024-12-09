@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from lightning.pytorch import Trainer
-from terrain_segmentation.roboflow import RoboflowClient
 from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
 from terrain_segmentation.models.default_model import DefaultSegmentationModel
 import torch
