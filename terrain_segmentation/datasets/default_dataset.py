@@ -6,21 +6,21 @@ import torch
 from segmentation_models_pytorch.encoders import get_preprocessing_fn
 
 class DefaultDataset(Dataset):
-    def __init__(self, image_dir, label_dir, transform=None):
-        self.image_dir = image_dir
-        self.label_dir = label_dir
+    def __init__(self, images: list[str], labels: list[str], transform=None):
+        self.image_dir = images
+        self.label_dir = labels
         self.transform = transform
-        self.image_paths = sorted([f for f in os.listdir(image_dir) if f.endswith('.png')])
-        self.label_paths = sorted([f for f in os.listdir(label_dir) if f.endswith('.png')])
-        preprocess_input = get_preprocessing_fn('resnet18', pretrained='imagenet')
+        self.image_paths = images
+        self.label_paths = labels
+        # preprocess_input = get_preprocessing_fn('resnet18', pretrained='imagenet')
 
     def __len__(self):
         return len(self.image_paths)
     
     def __getitem__(self, idx):
         # Ścieżki do obrazu i etykiety
-        image_path = os.path.join(self.image_dir, self.image_paths[idx])
-        label_path = os.path.join(self.label_dir, self.label_paths[idx])
+        image_path = self.image_paths[idx]
+        label_path = self.label_paths[idx]
 
         # Załaduj obraz
         image = Image.open(image_path).convert("RGB")
