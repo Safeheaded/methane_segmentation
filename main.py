@@ -28,7 +28,7 @@ def main():
 
     neptune_project_name = os.getenv('NEPTUNE_PROJECT_NAME')
     neptune_api_key = os.getenv('NEPTUNE_API_TOKEN')
-    EPOCHS = 1
+    EPOCHS = 100
     T_MAX = EPOCHS * 112
 
     if neptune_project_name and neptune_api_key:
@@ -39,7 +39,7 @@ def main():
 
         PARAMS = {
             "batch_size": 16,
-            "learning_rate": 2e-4,
+            "learning_rate": 1e-3,
             "max_epochs": EPOCHS,
         }
 
