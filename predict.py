@@ -4,9 +4,8 @@ from terrain_segmentation.models.default_model import DefaultSegmentationModel
 from terrain_segmentation.datasets.default_dataset import DefaultDataset
 
 def main():
-    model_path = "yolov5_segmentation_model3.pth"
-    model = DefaultSegmentationModel(1, T_MAX=2*15)
-    model.load_state_dict(torch.load(model_path))
+    model = DefaultSegmentationModel.load_from_checkpoint('./trained_models/best_model.ckpt', num_classes=1, T_MAX=16*112)
+    # model.load_state_dict(torch.load(model_path))
     test_dataset = DefaultDataset("datasets/Segmentacja terenów --1/valid/images", "datasets/Segmentacja terenów --1/valid/labels")
     first_image, first_mask = test_dataset[2]
     with torch.no_grad():

@@ -28,8 +28,8 @@ def main():
 
     neptune_project_name = os.getenv('NEPTUNE_PROJECT_NAME')
     neptune_api_key = os.getenv('NEPTUNE_API_TOKEN')
-    EPOCHS = 20
-    T_MAX = EPOCHS * 15
+    EPOCHS = 1
+    T_MAX = EPOCHS * 112
 
     if neptune_project_name and neptune_api_key:
         neptune_logger = NeptuneLogger(
@@ -38,7 +38,7 @@ def main():
         )
 
         PARAMS = {
-            "batch_size": 2,
+            "batch_size": 16,
             "learning_rate": 2e-4,
             "max_epochs": EPOCHS,
         }
@@ -47,13 +47,15 @@ def main():
 
 
 
-    data_module = DefaultDatamodule()
+    data_module = DefaultDatamodule(batch_size=16)
 
 
     model = DefaultSegmentationModel(num_classes=1, T_MAX=T_MAX)
 
     trainer = Trainer(max_epochs=EPOCHS, accelerator='gpu', callbacks=[checkpoint_callback], logger=neptune_logger)
     trainer.fit(model=model, datamodule=data_module)
+    trainer.test(model=model, datamodule=data_module)
+
 
 
 if __name__ == "__main__":

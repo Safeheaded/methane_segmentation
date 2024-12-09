@@ -11,6 +11,12 @@ class DefaultSegmentationModel(pl.LightningModule):
         self.num_classes = num_classes
         self.input_channels = input_channels
         self.learning_rate = learning_rate
+        self.default_device = torch.device("cpu")
+
+        if torch.cuda.is_available():
+            self.default_device = torch.device("cuda")
+        elif torch.backends.mps.is_available():
+            self.default_device = torch.device("mps")
         
         # Ładujemy pretrenowany model YOLOv5 z detekcją
         self.network = smp.Unet(
@@ -33,6 +39,7 @@ class DefaultSegmentationModel(pl.LightningModule):
         self.test_step_outputs = []
         
     def forward(self, image):
+        image = image.to(self.default_device)
         image = (image - self.mean) / self.std
         return self.network(image)
 

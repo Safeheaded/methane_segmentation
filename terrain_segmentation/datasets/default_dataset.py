@@ -10,8 +10,8 @@ class DefaultDataset(Dataset):
         self.image_dir = image_dir
         self.label_dir = label_dir
         self.transform = transform
-        self.image_paths = sorted(os.listdir(image_dir))
-        self.label_paths = sorted(os.listdir(label_dir))
+        self.image_paths = sorted([f for f in os.listdir(image_dir) if f.endswith('.png')])
+        self.label_paths = sorted([f for f in os.listdir(label_dir) if f.endswith('.png')])
         preprocess_input = get_preprocessing_fn('resnet18', pretrained='imagenet')
 
     def __len__(self):
