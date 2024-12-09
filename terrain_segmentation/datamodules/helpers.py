@@ -35,3 +35,24 @@ def handle_robflow_dataset(paths: list[Path]):
             images_dir = path / 'images'
             images_dir.mkdir(parents=True, exist_ok=True)
             original_image.save(os.path.join(images_dir, f"{image_id}.png"))
+
+def handle_google_drive_files(dataset_path: Path, source_folder_name: str = '10cm'):
+    folder = 'train'
+    images_dir = dataset_path / folder / 'images'
+    labels_dir = dataset_path / folder / 'labels'
+
+    source_folder =Path(os.getcwd()) / 'datasets' / 'pan_geodeta' / source_folder_name
+
+    images = source_folder.glob('tile_image*.jpg')
+    labels = source_folder.glob('tile_mask*.png')
+
+    for image, label in zip(images, labels):
+        image_name = image.name
+        label_name = label.name
+        image_path = images_dir / image_name
+        label_path = labels_dir / label_name
+
+        image_path.write_bytes(image.read_bytes())
+        label_path.write_bytes(label.read_bytes())
+
+
