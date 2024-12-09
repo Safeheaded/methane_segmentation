@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader
 import os
 import lightning as L
 from ..datasets.default_dataset import DefaultDataset
-from ..roboflow.RoboflowClient import RoboflowClient
+from ..data_fetchers.RoboflowClient import RoboflowClient
 from .helpers import handle_robflow_dataset
 from pathlib import Path
 
