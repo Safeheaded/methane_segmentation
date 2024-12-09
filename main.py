@@ -20,16 +20,20 @@ checkpoint_callback = ModelCheckpoint(
     monitor="metrics/epoch/valid/dataset_iou",
     dirpath="trained_models",
     filename="best_model",
-    save_top_k=1,
+    save_top_k=2,
     mode="max",
+    save_last=True,
+    every_n_epochs=1,
+    save_weights_only=True,
 )
 
 def main():
 
     neptune_project_name = os.getenv('NEPTUNE_PROJECT_NAME')
     neptune_api_key = os.getenv('NEPTUNE_API_TOKEN')
-    EPOCHS = 100
+    EPOCHS = 20
     T_MAX = EPOCHS * 112
+    learning_rate = 1e-3
 
     if neptune_project_name and neptune_api_key:
         neptune_logger = NeptuneLogger(
@@ -39,8 +43,10 @@ def main():
 
         PARAMS = {
             "batch_size": 16,
-            "learning_rate": 1e-3,
+            "learning_rate": learning_rate,
             "max_epochs": EPOCHS,
+            "log_model_checkpoints": True,
+            "dependencies": "infer",
         }
 
         neptune_logger.log_hyperparams(PARAMS)
@@ -50,7 +56,7 @@ def main():
     data_module = DefaultDatamodule(batch_size=16)
 
 
-    model = DefaultSegmentationModel(num_classes=1, T_MAX=T_MAX)
+    model = DefaultSegmentationModel(num_classes=1, T_MAX=T_MAX, learning_rate=learning_rate)
 
     trainer = Trainer(max_epochs=EPOCHS, accelerator='gpu', callbacks=[checkpoint_callback], logger=neptune_logger)
     trainer.fit(model=model, datamodule=data_module)
