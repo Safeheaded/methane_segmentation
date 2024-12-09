@@ -6,6 +6,7 @@ from ..data_fetchers.RoboflowClient import RoboflowClient
 from .helpers import handle_robflow_dataset, handle_google_drive_files
 from pathlib import Path
 from ..data_fetchers.GoogleDriveClient import GoogleDriveClient
+from sklearn.model_selection import train_test_split
 
 class DefaultDatamodule(L.LightningDataModule):
     def __init__(self, data_dir="datasets", batch_size=2, num_workers=4, version = "2", overwrite=False):
@@ -18,7 +19,7 @@ class DefaultDatamodule(L.LightningDataModule):
         self.overwrite = overwrite
         self.dataset_location = Path(os.path.join(Path.cwd(), self.data_dir))
         self.google_drive_path = self.dataset_location / "pan_geodeta"
-        self.location = self.dataset_location / os.getenv("ROBOFLOW_PROJECT_NAME") + " --" + self.version
+        self.location = self.dataset_location / (os.getenv("ROBOFLOW_PROJECT_NAME") + " --" + self.version)
 
     def prepare_data(self):
         print('Preparing data')
@@ -38,15 +39,17 @@ class DefaultDatamodule(L.LightningDataModule):
         # Ścieżki do folderów z danymi
         train_image_dir = self.location / "train/images"
         train_label_dir = self.location / "train/labels"
-        val_image_dir = self.location / "valid/images"
-        val_label_dir = self.location / "valid/labels"
-        test_image_dir = self.location / "test/images"
-        test_label_dir = self.location / "test/labels"
+
+        all_images = sorted(list(train_image_dir.glob("*.png")))
+        all_labels = sorted(list(train_label_dir.glob("*.png")))
+
+        images_train, images_val, labels_train, labels_val = train_test_split(all_images, all_labels, test_size=0.2, random_state=42)
+        images_val, images_test, labels_val, labels_test = train_test_split(images_val, labels_val, test_size=0.3, random_state=42)
 
         # Datasety
-        self.train_dataset = DefaultDataset(train_image_dir, train_label_dir)
-        self.val_dataset = DefaultDataset(val_image_dir, val_label_dir)
-        self.test_dataset = DefaultDataset(test_image_dir, test_label_dir)
+        self.train_dataset = DefaultDataset(images_train, labels_train)
+        self.val_dataset = DefaultDataset(images_val, labels_val)
+        self.test_dataset = DefaultDataset(images_test, labels_test)
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)

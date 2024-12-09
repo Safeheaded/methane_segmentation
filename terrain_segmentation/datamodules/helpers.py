@@ -43,7 +43,7 @@ def handle_google_drive_files(dataset_path: Path, source_folder_name: str = '10c
 
     source_folder =Path(os.getcwd()) / 'datasets' / 'pan_geodeta' / source_folder_name
 
-    images = source_folder.glob('tile_image*.jpg')
+    images = source_folder.glob('tile_img*.png')
     labels = source_folder.glob('tile_mask*.png')
 
     for image, label in zip(images, labels):
