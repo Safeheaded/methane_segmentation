@@ -3,6 +3,7 @@ import lightning.pytorch as pl
 import torchmetrics
 import segmentation_models_pytorch as smp
 from torch.optim import lr_scheduler
+from neptune.types import File
 
 class DefaultSegmentationModel(pl.LightningModule):
     def __init__(self, num_classes, input_channels=3, learning_rate=1e-3, encoder_name="resnet34", T_MAX=100):
@@ -69,7 +70,7 @@ class DefaultSegmentationModel(pl.LightningModule):
         return
     
     def test_step(self, batch, batch_idx):
-        test_loss_info = self.shared_step(batch)
+        test_loss_info = self.shared_step(batch, 'test')
         self.test_step_outputs.append(test_loss_info)
         return test_loss_info
 
@@ -91,7 +92,7 @@ class DefaultSegmentationModel(pl.LightningModule):
             },
         }
     
-    def shared_step(self, batch):
+    def shared_step(self, batch, stage="train"):
         inputs, labels = batch
         outputs = self(inputs)
         outputs = outputs.squeeze(1)
@@ -101,6 +102,15 @@ class DefaultSegmentationModel(pl.LightningModule):
 
         prob_mask =  outputs.sigmoid()
         pred_mask = (prob_mask > 0.5).float()
+        if stage == "test":
+            print(labels.shape)
+            amount = pred_mask.shape[0]
+            for i in range(amount):
+                image = inputs.cpu()[i, :, :, :].squeeze(0)
+                image = image.permute(1, 2, 0)
+                self.logger.experiment[f"test/prediction"].append(File.as_image(image))
+                self.logger.experiment[f"test/prediction"].append(File.as_image(pred_mask.cpu()[i, :, :]))
+                self.logger.experiment[f"test/prediction"].append(File.as_image(labels.cpu()[i, :, :]))
 
         tp, fp, fn, tn = smp.metrics.get_stats(
             pred_mask.long(), labels.long(), mode="binary"
