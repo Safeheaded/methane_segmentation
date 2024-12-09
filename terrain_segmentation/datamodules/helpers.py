@@ -7,13 +7,15 @@ from pathlib import Path
 
 def handle_robflow_dataset(paths: list[Path]):
     for path in paths:
-        coco = COCO(path / Path('_annotations.coco.json'))
+        coco_path = path / Path('_annotations.coco.json')
+        coco = COCO(coco_path)
         img_dir = path
         image_id = 0
 
         for image_id in coco.imgs:
             img = coco.imgs[image_id]
-            original_image = Image.open(os.path.join(img_dir, img['file_name']))
+            image_path = os.path.join(img_dir, img['file_name'])
+            original_image = Image.open(image_path)
             image = np.array(original_image)
 
             # Utwórz czarny obraz o tych samych wymiarach co oryginalny obraz
@@ -35,6 +37,10 @@ def handle_robflow_dataset(paths: list[Path]):
             images_dir = path / 'images'
             images_dir.mkdir(parents=True, exist_ok=True)
             original_image.save(os.path.join(images_dir, f"{image_id}.png"))
+            os.remove(image_path)
+
+        os.remove(coco_path)
+
 
 def handle_google_drive_files(dataset_path: Path, source_folder_name: str = '10cm'):
     folder = 'train'
