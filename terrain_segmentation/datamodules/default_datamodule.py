@@ -20,6 +20,8 @@ class DefaultDatamodule(L.LightningDataModule):
         self.dataset_location = Path(os.path.join(Path.cwd(), self.data_dir))
         self.google_drive_path = self.dataset_location / "pan_geodeta"
         self.location = self.dataset_location / (os.getenv("ROBOFLOW_PROJECT_NAME") + " --" + self.version)
+        self.test_paths = []
+        self.test_paths_labels = []
 
     def prepare_data(self):
         print('Preparing data')
@@ -46,6 +48,9 @@ class DefaultDatamodule(L.LightningDataModule):
         images_train, images_val, labels_train, labels_val = train_test_split(all_images, all_labels, test_size=0.2, random_state=42)
         images_val, images_test, labels_val, labels_test = train_test_split(images_val, labels_val, test_size=0.3, random_state=42)
 
+        self.test_paths_images = images_test
+        self.test_paths_labels = labels_test
+
         # Datasety
         self.train_dataset = DefaultDataset(images_train, labels_train)
         self.val_dataset = DefaultDataset(images_val, labels_val)
@@ -59,3 +64,6 @@ class DefaultDatamodule(L.LightningDataModule):
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False)
+    
+    def get_test_paths(self):
+        return self.test_paths_images, self.test_paths_labels

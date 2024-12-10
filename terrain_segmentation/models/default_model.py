@@ -41,6 +41,7 @@ class DefaultSegmentationModel(pl.LightningModule):
         
     def forward(self, image):
         image = image.to(self.default_device)
+        print(image.shape)
         image = (image - self.mean) / self.std
         return self.network(image)
 
@@ -103,7 +104,6 @@ class DefaultSegmentationModel(pl.LightningModule):
         prob_mask =  outputs.sigmoid()
         pred_mask = (prob_mask > 0.5).float()
         if stage == "test":
-            print(labels.shape)
             amount = pred_mask.shape[0]
             for i in range(amount):
                 image = inputs.cpu()[i, :, :, :].squeeze(0)
