@@ -7,6 +7,8 @@ from .helpers import handle_robflow_dataset, handle_google_drive_files
 from pathlib import Path
 from ..data_fetchers.GoogleDriveClient import GoogleDriveClient
 from sklearn.model_selection import train_test_split
+import albumentations as A
+import albumentations.pytorch.transforms
 
 class DefaultDatamodule(L.LightningDataModule):
     def __init__(self, data_dir="datasets", batch_size=2, num_workers=4, version = "2", overwrite=False):
@@ -22,6 +24,18 @@ class DefaultDatamodule(L.LightningDataModule):
         self.location = self.dataset_location / (os.getenv("ROBOFLOW_PROJECT_NAME") + " --" + self.version)
         self.test_paths = []
         self.test_paths_labels = []
+
+        self.augmentations = A.Compose([
+            A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(p=0.5),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            A.pytorch.transforms.ToTensorV2(),
+        ])
+
+        self.transforms = A.Compose([
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            A.pytorch.transforms.ToTensorV2(),
+        ])
 
     def prepare_data(self):
         print('Preparing data')
@@ -51,19 +65,20 @@ class DefaultDatamodule(L.LightningDataModule):
         self.test_paths_images = images_test
         self.test_paths_labels = labels_test
 
+
+
         # Datasety
-        self.train_dataset = DefaultDataset(images_train, labels_train)
-        self.val_dataset = DefaultDataset(images_val, labels_val)
-        self.test_dataset = DefaultDataset(images_test, labels_test)
+        self.train_dataset = DefaultDataset(images_train, labels_train, transform=self.augmentations)
+        self.val_dataset = DefaultDataset(images_val, labels_val, transform=self.transforms)
+        self.test_dataset = DefaultDataset(images_test, labels_test, transform=self.transforms)
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True, pin_memory=True, persistent_workers=True)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False)
-
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False, pin_memory=True, persistent_workers=True)
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False)
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False, pin_memory=True, persistent_workers=True)
     
     def get_test_paths(self):
         return self.test_paths_images, self.test_paths_labels

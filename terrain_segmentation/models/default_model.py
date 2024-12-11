@@ -6,6 +6,7 @@ from torch.optim import lr_scheduler
 from neptune.types import File
 
 class DefaultSegmentationModel(pl.LightningModule):
+
     def __init__(self, num_classes, input_channels=3, learning_rate=1e-3, encoder_name="resnet34", T_MAX=100):
         super().__init__()
         self.T_MAX = T_MAX
@@ -41,7 +42,6 @@ class DefaultSegmentationModel(pl.LightningModule):
         
     def forward(self, image):
         image = image.to(self.default_device)
-        print(image.shape)
         image = (image - self.mean) / self.std
         return self.network(image)
 
@@ -97,6 +97,10 @@ class DefaultSegmentationModel(pl.LightningModule):
         inputs, labels = batch
         outputs = self(inputs)
         outputs = outputs.squeeze(1)
+        # Normalizacja outputów do zakresu [0,1]
+        min_val = outputs.min()
+        max_val = outputs.max()
+        outputs = (outputs - min_val) / (max_val - min_val)
 
         loss = self.loss_function(outputs, labels.float())
         self.log("metrics/batch/loss", loss, prog_bar=True)

@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import torch
 from segmentation_models_pytorch.encoders import get_preprocessing_fn
+import matplotlib.pyplot as plt
 
 class DefaultDataset(Dataset):
     def __init__(self, images: list[str], labels: list[str], transform=None):
@@ -25,14 +26,51 @@ class DefaultDataset(Dataset):
         # Załaduj obraz
         image = Image.open(image_path).convert("RGB")
         image = np.asarray(image).copy()
-        image = np.resize(image, (512, 512, 3)).transpose(2, 0, 1)
-        image = torch.tensor(image, dtype=torch.float32) / 255.0
+        image = image / 255
 
         mask = Image.open(label_path)
         mask = np.asarray(mask).copy()
-        mask = torch.tensor(mask, dtype=torch.float32) / 255.0 
+        mask = mask / 255
 
-
+                # Zastosuj transformacje jeśli są zdefiniowane
+        if self.transform is not None:
+            transformed = self.transform(image=image, mask=mask)
+            image = transformed['image']
+            mask = transformed['mask']
 
         # Zwróć obraz i maski
         return image, mask
+
+    def visualize_item(self, idx):
+        """Wyświetla obrazek i maskę dla danego indeksu"""
+        image, mask = self.__getitem__(idx)
+        
+        # Konwertuj tensory z powrotem do numpy jeśli to konieczne
+        if isinstance(image, torch.Tensor):
+            image = image.numpy()
+            if image.shape[0] == 3:  # Jeśli kanały są pierwsze (C,H,W)
+                image = np.transpose(image, (1,2,0))
+        if isinstance(mask, torch.Tensor):
+            mask = mask.numpy()
+
+        # Normalizuj wartości do zakresu [0,1] jeśli to konieczne
+        if image.max() > 1:
+            image = image / 255.0
+        if mask.max() > 1:
+            mask = mask / 255.0
+
+        # Utworzenie subplotów
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+        
+        # Wyświetlenie obrazka
+        ax1.imshow(image)
+        ax1.set_title('Obraz')
+        ax1.axis('off')
+        
+        # Wyświetlenie maski
+        ax2.imshow(mask, cmap='gray')
+        ax2.set_title('Maska')
+        ax2.axis('off')
+        
+        plt.tight_layout()
+        plt.show()
