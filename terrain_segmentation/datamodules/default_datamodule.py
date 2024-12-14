@@ -9,9 +9,11 @@ from ..data_fetchers.GoogleDriveClient import GoogleDriveClient
 from sklearn.model_selection import train_test_split
 import albumentations as A
 import albumentations.pytorch.transforms
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 class DefaultDatamodule(L.LightningDataModule):
-    def __init__(self, data_dir="datasets", batch_size=2, num_workers=4, version = "2", overwrite=False):
+    def __init__(self, data_dir="datasets", batch_size=2, num_workers=4, version = "3", overwrite=False):
         super().__init__()
         print('Init datamodule')
         self.data_dir = data_dir
@@ -28,12 +30,12 @@ class DefaultDatamodule(L.LightningDataModule):
         self.augmentations = A.Compose([
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            # A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             A.pytorch.transforms.ToTensorV2(),
         ])
 
         self.transforms = A.Compose([
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            # A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             A.pytorch.transforms.ToTensorV2(),
         ])
 

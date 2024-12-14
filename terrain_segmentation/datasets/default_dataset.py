@@ -23,14 +23,13 @@ class DefaultDataset(Dataset):
         image_path = self.image_paths[idx]
         label_path = self.label_paths[idx]
 
-        # Załaduj obraz
+       # Załaduj obraz
         image = Image.open(image_path).convert("RGB")
-        image = np.asarray(image).copy()
-        image = image / 255
+        image = np.array(image).copy()
+    
 
         mask = Image.open(label_path)
-        mask = np.asarray(mask).copy()
-        mask = mask / 255
+        mask = np.array(mask).copy()
 
                 # Zastosuj transformacje jeśli są zdefiniowane
         if self.transform is not None:
@@ -38,7 +37,9 @@ class DefaultDataset(Dataset):
             image = transformed['image']
             mask = transformed['mask']
 
-        # Zwróć obraz i maski
+        image = torch.tensor(image, dtype=torch.float32) / 255.0 
+        mask = torch.tensor(mask, dtype=torch.long) / 255.0
+        
         return image, mask
 
     def visualize_item(self, idx):

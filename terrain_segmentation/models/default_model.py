@@ -41,7 +41,7 @@ class DefaultSegmentationModel(pl.LightningModule):
         self.test_step_outputs = []
         
     def forward(self, image):
-        image = image.to(self.default_device)
+        # image = image.to(self.default_device)
         image = (image - self.mean) / self.std
         return self.network(image)
 
@@ -97,11 +97,6 @@ class DefaultSegmentationModel(pl.LightningModule):
         inputs, labels = batch
         outputs = self(inputs)
         outputs = outputs.squeeze(1)
-        # Normalizacja outputów do zakresu [0,1]
-        min_val = outputs.min()
-        max_val = outputs.max()
-        outputs = (outputs - min_val) / (max_val - min_val)
-
         loss = self.loss_function(outputs, labels.float())
         self.log("metrics/batch/loss", loss, prog_bar=True)
 
