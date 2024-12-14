@@ -37,8 +37,8 @@ class DefaultDataset(Dataset):
             image = transformed['image']
             mask = transformed['mask']
 
-        image = torch.tensor(image, dtype=torch.float32) / 255.0 
-        mask = torch.tensor(mask, dtype=torch.long) / 255.0
+        image = image / 255.0 
+        mask = mask / 255.0
         
         return image, mask
 
