@@ -19,4 +19,4 @@ class GoogleDriveClient:
         gdown.download(url, str(output), quiet=False)
         with zipfile.ZipFile(output, 'r') as zip_ref:
             zip_ref.extractall(path)
-            os.remove(output)
+        os.remove(output)
