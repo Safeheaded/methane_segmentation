@@ -18,15 +18,16 @@ def main():
 
     neptune_project_name = os.getenv('NEPTUNE_PROJECT_NAME')
     neptune_api_key = os.getenv('NEPTUNE_API_TOKEN')
-    EPOCHS = 1
-    BATCH_SIZE = 16
-    T_MAX = EPOCHS * 57
+    EPOCHS = 3000
+    BATCH_SIZE = 32
+    T_MAX = EPOCHS * 344
     learning_rate = 2e-4
 
     if neptune_project_name and neptune_api_key:
         neptune_logger = NeptuneLogger(
             api_key=neptune_api_key,     # Twój klucz API
-            project=neptune_project_name  # Nazwa projektu w formacie WORKSPACE/PROJECT
+            project=neptune_project_name,  # Nazwa projektu w formacie WORKSPACE/PROJECT,
+            log_model_checkpoints=False
         )
 
         PARAMS = {
