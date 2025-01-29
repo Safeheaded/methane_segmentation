@@ -1,4 +1,3 @@
-![photo of Poznań map with green areas detected](./images/main_photo.png "Greeen areas in Poznań city centre")
 
 # ZPO Project - Segmentation of permeable and impermeable areas
 This project presents a code responsible for training a unet segmentations model for detecting impermeable areas.
@@ -7,8 +6,7 @@ This project presents a code responsible for training a unet segmentations model
 - trained on images provided by our lecturer and gathered by us with QGIS,
 - 430 annotated images in total
 - No preprocessing was added
-- store the dataset with annotations in XXX and provide a link here
-- what format for data and how to load it
+- Links to datasets [Dataset1](https://drive.google.com/file/d/1ljnnWSF8dcQW_B2l2LCmRftnyGwotYba/view) [Dataset2](https://drive.google.com/file/d/1-Y9OTHWHCw8Gjus7c04yDKAPLKUpEgrq/view?fbclid=IwY2xjawIHbrdleHRuA2FlbQIxMAABHZA5QgUMeqGrJTDtK0tdnqeJcn0X3QgizQZpDTgbr3nv4avi5jE265_8dQ_aem_Qhj_ZKD1LhR5w386JcLscA) 
 
 ## Training
 - we used unet with with ressnet34 weights and following parameters:
@@ -33,11 +31,16 @@ learning_rate = 2e-4
 
 - Metrics we used to evaluate the model (training/metrics/epoch/valid/dataset_iou , training/metrics/epoch/valid/per_image_iou)
 
+## Results in QGIS
+| Original | Mask | Information |
+|----------|-------|-------------|
+| ![zdj1](./images/Zrzut%20ekranu%202025-01-17%20164455.png) | ![zdj1_mask](./images/Zrzut%20ekranu%202025-01-17%20164431.png) | ![zdj1_pred](./images/Zrzut%20ekranu%202025-01-17%20164402.png) |
+| ![zdj2](./images/Zrzut%20ekranu%202025-01-17%20171439.png) | ![zdj2_mask](./images/Zrzut%20ekranu%202025-01-17%20171457.png) | ![zdj2_pred](./images/Zrzut%20ekranu%202025-01-17%20171322.png) |
 
 
 ## Trained model in ONNX ready for `Deepness` plugin
 - Downloadable [model](https://drive.google.com/file/d/1wEOb0LlU485C1tyuDuCWIq7yiO5brLXB/view) 
-- name of the script used to convert the model to ONNX and add the metadata to it
+- file used to convert the model to ONNX "file convert_to_onnx.py"
 
 ## Demo instructions and video
 - a short video of running the model in Deepness (no need for audio), preferably converted to GIF
