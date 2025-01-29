@@ -24,22 +24,25 @@ learning_rate = 2e-4
 - remember to create `.env` file with content according to `.env.example`
 
 ## Results
-- Example images from dataset (diverse), at least 4 images
-- Examples of good and bad predictions, at least 4 images
-- Metrics on the test and train dataset
+
+| Original | Mask | Prediction |
+|----------|-------|-------------|
+| ![zdj1](./images/zdj1.PNG) | ![zdj1_mask](./images/zdj1_mask.PNG) | ![zdj1_pred](./images/zdj1_pred.PNG) |
+| ![zdj2](./images/zdj2.PNG) | ![zdj2_mask](./images/zdj2_mask.PNG) | ![zdj2_pred](./images/zdj2_pred.PNG) |
+| ![zdj3](./images/zdj3.PNG) | ![zdj3_mask](./images/zdj3_mask.PNG) | ![zdj3_pred](./images/zdj3_pred.PNG) |
+
+- Metrics we used to evaluate the model (training/metrics/epoch/valid/dataset_iou , training/metrics/epoch/valid/per_image_iou)
+
+
 
 ## Trained model in ONNX ready for `Deepness` plugin
-- model uploaded to XXX and a LINK_HERE
-- model have to be in the ONNX format, including metadata required by `Deepness` plugin (spatial resolution, thresholds, ...)
+- Downloadable [model](https://drive.google.com/file/d/1wEOb0LlU485C1tyuDuCWIq7yiO5brLXB/view) 
 - name of the script used to convert the model to ONNX and add the metadata to it
 
 ## Demo instructions and video
 - a short video of running the model in Deepness (no need for audio), preferably converted to GIF
-- We used read orthophotomap of Poznań. You can find it here
+- We used read orthophotomap of Poznań. You can find it [hear](https://mapy.geoportal.gov.pl/imap/Imgp_2.html?SRS=2180&resources=map:wms@https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/TrueOrtho) 
 
 ## People
 - Krzysztof Nosal,
 - Patryk Marczak
-
-## Other information
-Feel free to add other information here.
