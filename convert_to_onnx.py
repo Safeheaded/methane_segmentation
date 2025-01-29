@@ -6,6 +6,8 @@ import argparse
 
 def main(input: str, output: str):
     model = DefaultSegmentationModel.load_from_checkpoint(input, num_classes=1, T_MAX=16*344)
+    
+    model.to('cpu')
 
     model.load_state_dict(torch.load(input, map_location='cpu')['state_dict'])
     model.eval()
@@ -15,7 +17,7 @@ def main(input: str, output: str):
 
     torch.onnx.export(model,
                 x,  # model input
-                'model.onnx',  # where to save the model
+                output,  # where to save the model
                 export_params=True,
                 opset_version=15,
                 input_names=['input'],
