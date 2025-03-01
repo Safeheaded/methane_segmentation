@@ -4,10 +4,11 @@ import torchmetrics
 import segmentation_models_pytorch as smp
 from torch.optim import lr_scheduler
 from neptune.types import File
+import monai.losses
 
 class DefaultSegmentationModel(pl.LightningModule):
 
-    def __init__(self, num_classes, input_channels=3, learning_rate=1e-3, encoder_name="resnet34", T_MAX=100):
+    def __init__(self, num_classes, input_channels=18, learning_rate=1e-3, encoder_name="efficientnet-b0", T_MAX=100):
         super().__init__()
         self.T_MAX = T_MAX
         self.num_classes = num_classes
@@ -24,13 +25,13 @@ class DefaultSegmentationModel(pl.LightningModule):
         self.network = smp.Unet(
                 encoder_name=encoder_name,        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
                 encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
-                in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-                classes=1,                      # model output channels (number of classes in your dataset)
+                in_channels=input_channels,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+                classes=num_classes,                      # model output channels (number of classes in your dataset)
             )
         
         params = smp.encoders.get_preprocessing_params(encoder_name)
-        self.register_buffer("std", torch.tensor(params["std"]).view(1, 3, 1, 1))
-        self.register_buffer("mean", torch.tensor(params["mean"]).view(1, 3, 1, 1))
+        # self.register_buffer("std", torch.tensor(params["std"]).view(1, -1, 1, 1))
+        # self.register_buffer("mean", torch.tensor(params["mean"]).view(1, -1, 1, 1))
 
         self.loss_function = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
         self.accuracy = torchmetrics.Accuracy(task='binary')
@@ -42,7 +43,8 @@ class DefaultSegmentationModel(pl.LightningModule):
         
     def forward(self, image):
         # image = image.to(self.default_device)
-        image = (image - self.mean) / self.std
+        image = image.float()
+        # image = (image - self.mean) / self.std
         return self.network(image)
 
     def training_step(self, batch, batch_idx):
@@ -97,7 +99,7 @@ class DefaultSegmentationModel(pl.LightningModule):
         inputs, labels = batch
         outputs = self(inputs)
         outputs = outputs.squeeze(1)
-        loss = self.loss_function(outputs, labels.float())
+        loss = self.loss_function(outputs, labels)
         self.log("metrics/batch/loss", loss, prog_bar=True)
 
         prob_mask =  outputs.sigmoid()
@@ -105,14 +107,14 @@ class DefaultSegmentationModel(pl.LightningModule):
         if stage == "test":
             amount = pred_mask.shape[0]
             for i in range(amount):
-                image = inputs.cpu()[i, :, :, :].squeeze(0)
-                image = image.permute(1, 2, 0)
-                self.logger.experiment[f"test/prediction"].append(File.as_image(image))
+        #         image = inputs.cpu()[i, :, :, :].squeeze(0)
+        #         image = image.permute(1, 2, 0)
+        #         self.logger.experiment[f"test/prediction"].append(File.as_image(image))
                 self.logger.experiment[f"test/prediction"].append(File.as_image(pred_mask.cpu()[i, :, :]))
                 self.logger.experiment[f"test/prediction"].append(File.as_image(labels.cpu()[i, :, :]))
 
         tp, fp, fn, tn = smp.metrics.get_stats(
-            pred_mask.long(), labels.long(), mode="binary"
+            pred_mask.long(), labels.long(), mode="multilabel"
         )
 
         return {

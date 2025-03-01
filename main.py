@@ -18,8 +18,8 @@ def main():
 
     neptune_project_name = os.getenv('NEPTUNE_PROJECT_NAME')
     neptune_api_key = os.getenv('NEPTUNE_API_TOKEN')
-    EPOCHS = 3000
-    BATCH_SIZE = 32
+    EPOCHS = 20
+    BATCH_SIZE = 8
     T_MAX = EPOCHS * 344
     learning_rate = 2e-4
 
@@ -59,11 +59,12 @@ def main():
 
     model = DefaultSegmentationModel(num_classes=1, T_MAX=T_MAX, learning_rate=learning_rate)
 
+    # trainer = Trainer(max_epochs=EPOCHS, accelerator='gpu', callbacks=[checkpoint_callback])
     trainer = Trainer(max_epochs=EPOCHS, accelerator='gpu', callbacks=[checkpoint_callback], logger=neptune_logger)
     trainer.fit(model=model, datamodule=data_module)
 
-    neptune_logger.experiment["test/testing_images_paths"].append(", ".join([str(path) for path in data_module.test_paths_images]))
-    neptune_logger.experiment["test/testing_labels_paths"].append(", ".join([str(path) for path in data_module.test_paths_labels]))
+    # neptune_logger.experiment["test/testing_images_paths"].append(", ".join([str(path) for path in data_module.test_paths_images]))
+    # neptune_logger.experiment["test/testing_labels_paths"].append(", ".join([str(path) for path in data_module.test_paths_labels]))
 
     trainer.test(model=model, datamodule=data_module)
 

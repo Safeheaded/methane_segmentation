@@ -2,83 +2,58 @@ from torch.utils.data import DataLoader
 import os
 import lightning as L
 from ..datasets.default_dataset import DefaultDataset
-from ..data_fetchers.RoboflowClient import RoboflowClient
-from .helpers import handle_robflow_dataset, handle_google_drive_files
+from .helpers import raw_bands_available
 from pathlib import Path
-from ..data_fetchers.GoogleDriveClient import GoogleDriveClient
 from sklearn.model_selection import train_test_split
 import albumentations as A
 import albumentations.pytorch.transforms
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
+import pandas as pd
+import rasterio
+import numpy as np
 
 class DefaultDatamodule(L.LightningDataModule):
-    def __init__(self, data_dir="datasets", batch_size=2, num_workers=4, version = "3", overwrite=False):
+    def __init__(self, data_dir="datasets", batch_size=4, num_workers=4, exclude_from_input=[], with_rgba_labels = False):
         super().__init__()
-        print('Init datamodule')
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.version = version
-        self.overwrite = overwrite
         self.dataset_location = Path(os.path.join(Path.cwd(), self.data_dir))
-        self.google_drive_path = self.dataset_location / "pan_geodeta"
-        self.location = self.dataset_location / (os.getenv("ROBOFLOW_PROJECT_NAME") + " --" + self.version)
         self.test_paths = []
         self.test_paths_labels = []
+        self.exclude_from_input = exclude_from_input
+        self.with_rgba_labels = with_rgba_labels
 
         self.augmentations = A.Compose([
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
-            # A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             A.pytorch.transforms.ToTensorV2(),
         ])
 
         self.transforms = A.Compose([
-            # A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
             A.pytorch.transforms.ToTensorV2(),
         ])
 
-    def prepare_data(self):
-        print('Preparing data')
-        if not self.google_drive_path.exists():
-            google_drive = GoogleDriveClient()
-            google_drive.getDataset()
-        if not os.path.exists(self.location):
-            roboflow = RoboflowClient()
-            dataset = roboflow.getDataset(self.version)
-            dataset_path = Path(dataset.location)
-            folders = [dataset_path / Path(item.name) for item in dataset_path.iterdir() if item.is_dir()]
-            handle_robflow_dataset(folders)
-            handle_google_drive_files(self.location)
+    def load_data_dirs(self, path) -> pd.DataFrame:
+        return [f for f in Path(path).iterdir() if f.is_dir()]
 
 
     def setup(self, stage=None):
-        # Ścieżki do folderów z danymi
-        train_image_dir = self.location / "train/images"
-        train_label_dir = self.location / "train/labels"
-
-        all_images = sorted(list(train_image_dir.glob("*.png")))
-        all_labels = sorted(list(train_label_dir.glob("*.png")))
-
-        images_train, images_val, labels_train, labels_val = train_test_split(all_images, all_labels, test_size=0.2, random_state=42)
-        images_val, images_test, labels_val, labels_test = train_test_split(images_val, labels_val, test_size=0.3, random_state=42)
-
-        self.test_paths_images = images_test
-        self.test_paths_labels = labels_test
-
-
+        data_dirs = self.load_data_dirs(self.dataset_location)
+        X_train_dir_paths, X_test_dir_paths, _, _ = train_test_split(data_dirs, data_dirs, test_size=0.2, random_state=42)
+        X_val_dir_paths, X_test_dir_paths, _, _ = train_test_split(data_dirs, data_dirs, test_size=0.3, random_state=42)
 
         # Datasety
-        self.train_dataset = DefaultDataset(images_train, labels_train, transform=self.augmentations)
-        self.val_dataset = DefaultDataset(images_val, labels_val, transform=self.transforms)
-        self.test_dataset = DefaultDataset(images_test, labels_test, transform=self.transforms)
+        self.train_dataset = DefaultDataset(X_train_dir_paths, self.exclude_from_input, self.with_rgba_labels, transform=self.augmentations)
+        self.val_dataset = DefaultDataset(X_val_dir_paths, self.exclude_from_input, self.with_rgba_labels, transform=self.transforms)
+        self.test_dataset = DefaultDataset(X_test_dir_paths, self.exclude_from_input, self.with_rgba_labels, transform=self.transforms)
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True, pin_memory=True, persistent_workers=True)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False, pin_memory=True, persistent_workers=True)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False, pin_memory=True, persistent_workers=True)
+        return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False, pin_memory=True, persistent_workers=True)
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False, pin_memory=True, persistent_workers=True)
     

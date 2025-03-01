@@ -1,17 +1,8 @@
-import albumentations as A
-import albumentations.pytorch.transforms
-from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
+import rasterio
+import numpy as np
+from PIL import Image
+import tifffile
 
-augmentations = A.Compose([
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
-            A.pytorch.transforms.ToTensorV2(),
-        ])
+images = tifffile.imread('/Users/patryk/masters/methane_segmentation/datasets/ang20191025t193513_r12800_c0_w512_h512/mag1c.tif')
 
-
-data_module = DefaultDatamodule(batch_size=16)
-
-data_module.setup()
-
-for i in range(10):
-    data_module.train_dataset.visualize_item(i)
+print(images)
