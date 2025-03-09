@@ -21,7 +21,6 @@ class DefaultSegmentationModel(pl.LightningModule):
         elif torch.backends.mps.is_available():
             self.default_device = torch.device("mps")
         
-        # Ładujemy pretrenowany model YOLOv5 z detekcją
         self.network = smp.Unet(
                 encoder_name=encoder_name,        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
                 encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
@@ -29,12 +28,8 @@ class DefaultSegmentationModel(pl.LightningModule):
                 classes=num_classes,                      # model output channels (number of classes in your dataset)
             )
         
-        params = smp.encoders.get_preprocessing_params(encoder_name)
-        # self.register_buffer("std", torch.tensor(params["std"]).view(1, -1, 1, 1))
-        # self.register_buffer("mean", torch.tensor(params["mean"]).view(1, -1, 1, 1))
 
         self.loss_function = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
-        self.accuracy = torchmetrics.Accuracy(task='binary')
         self.save_hyperparameters()
 
         self.training_step_outputs = []
@@ -42,10 +37,10 @@ class DefaultSegmentationModel(pl.LightningModule):
         self.test_step_outputs = []
         
     def forward(self, image):
-        # image = image.to(self.default_device)
         image = image.float()
-        # image = (image - self.mean) / self.std
-        return self.network(image)
+        image = (image - image.mean(dim=(2, 3), keepdim=True)) / (image.std(dim=(2, 3), keepdim=True) + 1e-8)
+        res = self.network(image)
+        return res
 
     def training_step(self, batch, batch_idx):
         train_loss_info = self.shared_step(batch)
@@ -102,19 +97,17 @@ class DefaultSegmentationModel(pl.LightningModule):
         loss = self.loss_function(outputs, labels)
         self.log("metrics/batch/loss", loss, prog_bar=True)
 
-        prob_mask =  outputs.sigmoid()
-        pred_mask = (prob_mask > 0.5).float()
+        outputs =  outputs.sigmoid()
+        outputs = torch.clamp(outputs, 0, 1)
+
         if stage == "test":
-            amount = pred_mask.shape[0]
+            amount = outputs.shape[0]
             for i in range(amount):
-        #         image = inputs.cpu()[i, :, :, :].squeeze(0)
-        #         image = image.permute(1, 2, 0)
-        #         self.logger.experiment[f"test/prediction"].append(File.as_image(image))
-                self.logger.experiment[f"test/prediction"].append(File.as_image(pred_mask.cpu()[i, :, :]))
+                self.logger.experiment[f"test/prediction"].append(File.as_image(outputs.cpu()[i, :, :]))
                 self.logger.experiment[f"test/prediction"].append(File.as_image(labels.cpu()[i, :, :]))
 
         tp, fp, fn, tn = smp.metrics.get_stats(
-            pred_mask.long(), labels.long(), mode="multilabel"
+            outputs.long(), labels.long(), mode="binary"
         )
 
         return {
@@ -147,9 +140,9 @@ class DefaultSegmentationModel(pl.LightningModule):
         # Empty images influence a lot on per_image_iou and much less on dataset_iou.
         dataset_iou = smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro")
         self.log(f"metrics/epoch/{stage}/dataset_iou", dataset_iou, prog_bar=True)
-        # metrics = {
-        #     f"{stage}_per_image_iou": per_image_iou,
-        #     f"{stage}_dataset_iou": dataset_iou,
-        # }
+        metrics = {
+            f"{stage}_per_image_iou": per_image_iou,
+            f"{stage}_dataset_iou": dataset_iou,
+        }
 
-        # self.log_dict(metrics, prog_bar=True)
+        self.log_dict(metrics, prog_bar=True)

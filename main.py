@@ -18,7 +18,7 @@ def main():
 
     neptune_project_name = os.getenv('NEPTUNE_PROJECT_NAME')
     neptune_api_key = os.getenv('NEPTUNE_API_TOKEN')
-    EPOCHS = 20
+    EPOCHS = 5
     BATCH_SIZE = 8
     T_MAX = EPOCHS * 344
     learning_rate = 2e-4
