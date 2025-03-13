@@ -5,6 +5,8 @@ import segmentation_models_pytorch as smp
 from torch.optim import lr_scheduler
 from neptune.types import File
 import monai.losses
+import io
+import matplotlib.pyplot as plt
 
 class DefaultSegmentationModel(pl.LightningModule):
 
@@ -98,13 +100,26 @@ class DefaultSegmentationModel(pl.LightningModule):
         self.log("metrics/batch/loss", loss, prog_bar=True)
 
         outputs =  outputs.sigmoid()
-        outputs = torch.clamp(outputs, 0, 1)
+        outputs = (outputs > 0.5).float()
 
         if stage == "test":
             amount = outputs.shape[0]
             for i in range(amount):
-                self.logger.experiment[f"test/prediction"].append(File.as_image(outputs.cpu()[i, :, :]))
-                self.logger.experiment[f"test/prediction"].append(File.as_image(labels.cpu()[i, :, :]))
+                fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+                # Ground Truth
+                axes[0].imshow(labels.cpu()[i, :, :], cmap='gray')
+                axes[0].set_title("Ground Truth")
+                axes[0].axis('off')
+                # Prediction
+                axes[1].imshow(outputs.cpu()[i, :, :], cmap='gray')
+                axes[1].set_title("Prediction")
+                axes[1].axis('off')
+                # plt.tight_layout()
+                # Zapis wykresu do bufora
+                # Przesłanie obrazu za pomocą loggera
+                self.logger.experiment[f"test/prediction"].append(fig)
+                fig.clear()
+                plt.close(fig)
 
         tp, fp, fn, tn = smp.metrics.get_stats(
             outputs.long(), labels.long(), mode="binary"
