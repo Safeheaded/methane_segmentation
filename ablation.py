@@ -1,23 +1,10 @@
-import torch
-import shap
-import numpy as np
-import matplotlib.pyplot as plt
-import ssl
-from torch.utils.data import DataLoader
-from captum.attr import GradientShap, IntegratedGradients
-from captum.attr import visualization as viz
-from torchmetrics.classification import BinaryAccuracy
-from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
+from captum.attr import FeatureAblation
 from terrain_segmentation.models.default_model import DefaultSegmentationModel
-import torch.multiprocessing
-from itertools import product
-import pandas as pd
-
+import torch
+from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
+from captum.attr import visualization as viz
 
 def main():
-    torch.multiprocessing.set_start_method("spawn", force=True)
-    torch.set_default_dtype(torch.float32)
-    torch.mps.empty_cache()  # Czyści cache na MPS
     T_MAX = 50
     learning_rate = 2e-4
 
@@ -27,8 +14,7 @@ def main():
     model = model.to(torch.device('mps'))  # Przenieś model na MPS
     model.eval()  # Set the model to evaluation mode
 
-    # Wczytaj DataModule
-    data_module = DefaultDatamodule(batch_size=14)  # Define your data module
+    data_module = DefaultDatamodule(batch_size=32)  # Define your data module
     data_module.setup(stage='test')  # Setup the data for the test stage
 
     # Pobierz pierwsze 8 próbek z testowego zbioru danych
@@ -39,24 +25,15 @@ def main():
     images = images.float()
     labels = labels.float()
 
-    label_for_coords = labels.clone().numpy()
-    # Sprawdzenie, ile pikseli w macierzy label_for_coords jest równa 1
-    num_pixels_equal_to_one = np.sum(label_for_coords == 1)
-
-    coordinates = np.column_stack(np.where(label_for_coords != 0))
-
-    # Przenieś dane na urządzenie, jeśli jest używane GPU
     device = torch.device('mps')
     images = images.to(device)
     labels = labels.to(device)
-    # labels = labels.unsqueeze(0)
     # images = images.unsqueeze(0)
 
     out = model(images)
 
     # Find most likely segmentation class for each pixel.
     out_max = torch.argmax(out, dim=1, keepdim=True)
-    features = data_module.inputs
 
     def agg_segmentation_wrapper(inp):
         model_out = model(inp)
@@ -66,19 +43,29 @@ def main():
         selected_inds = torch.zeros_like(model_out).scatter_(1, out_max, 1)
         return (model_out * selected_inds).sum(dim=(2,3))
 
-    gradient_shap = GradientShap(agg_segmentation_wrapper)
+    # Tworzymy obiekt ablacji
+    ablation = FeatureAblation(agg_segmentation_wrapper)
 
-    # Tworzymy baseline (np. obrazy z zerowymi wartościami)
-    baseline = torch.zeros_like(images)
-    batch_size, _, height, width = images.shape
-    # targets = torch.zeros((1), dtype=torch.long).to(images.device)
-    targets = [(0,)] * batch_size  # Każdy obraz ma `target=(0,)`
+    # Przygotowanie feature_mask:
+    # Założenie: images o wymiarach (1, C, H, W)
+    B, C, H, W = images.shape
+    feature_mask = torch.arange(C, device=images.device).view(1, C, 1, 1).expand(B, C, H, W)
 
-    attributions = gradient_shap.attribute(images, baselines=baseline, n_samples=2, target=0)
-    channel_importance = attributions.abs().mean(dim=(0, 2, 3)).tolist()
+    # Obliczamy wpływ poszczególnych kanałów wejściowych przez ablację całych kanałów
+    # przekazując feature_mask, która grupuje piksele w kanale razem
+    attributions = ablation.attribute(images, target=0, feature_mask=feature_mask)
+    # viz.visualize_image_attr(attributions[0].cpu().detach().permute(1,2,0).numpy(),sign="all")
+
+    # Wynik to tensor z wartościami wpływu każdego kanału (1, C, H, W)
+    print(attributions.shape)
+    features = data_module.inputs
+
+    # Uśrednienie wpływu po wymiarach przestrzennych (H, W), żeby uzyskać wpływ per channel
+    channel_importance = attributions.abs().mean(dim=(2, 3)).sum(dim=(0)).tolist()
+    print(channel_importance)
     res = list(zip(features, channel_importance))
     res.sort(key=lambda x: x[1], reverse=True)
     print(res)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
