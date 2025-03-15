@@ -5,8 +5,11 @@ lightning
 numpy
 pandas
 matplotlib
-rasterio
+tifffile
 neptune
 scikit-learn
 albumentations
 segmentation-models-pytorch
+diffusers
+transformers
+accelerate

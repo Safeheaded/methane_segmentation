@@ -391,3 +391,4 @@ lightning_logs
 runs
 trained_models
 .neptune
+trained_models_stable_diffusion

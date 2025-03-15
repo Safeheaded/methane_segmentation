@@ -10,11 +10,10 @@ import albumentations.pytorch.transforms
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 import pandas as pd
-import rasterio
 import numpy as np
 
 class DefaultDatamodule(L.LightningDataModule):
-    def __init__(self, data_dir="datasets", batch_size=4, num_workers=4, exclude_from_input=[]):
+    def __init__(self, data_dir="datasets", batch_size=4, num_workers=8, exclude_from_input=[]):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
