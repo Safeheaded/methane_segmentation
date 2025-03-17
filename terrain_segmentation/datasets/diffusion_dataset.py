@@ -33,11 +33,19 @@ class DiffusionDataset(Dataset):
         
         inputs_paths = [f for f in path.iterdir() if f.is_file() and f.name not in excluded_inputs]
         inputs_paths.sort()
-        inputs = np.array([np.array(tifffile.imread(s)) / np.max(np.array(tifffile.imread(s))) for s in inputs_paths if Path(s).exists()], dtype=np.float32)    
+        inputs = np.array([
+            safe_normalize(tifffile.imread(s)) 
+            for s in inputs_paths if Path(s).exists()
+        ], dtype=np.float32)    
         return inputs, label
 
+def safe_normalize(arr):
+    m = np.max(arr)
+    if m == 0:
+        return arr  # lub można zwrócić np. arr.astype(np.float32) * 0
+    return arr / m
 
 
-        
 
-        
+
+
