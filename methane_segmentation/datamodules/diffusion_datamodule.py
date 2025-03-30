@@ -2,13 +2,10 @@ from torch.utils.data import DataLoader
 import os
 import lightning as L
 from ..datasets.diffusion_dataset import DiffusionDataset
-from .helpers import raw_bands_available
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 import albumentations as A
 import albumentations.pytorch.transforms
-import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
 import pandas as pd
 
 class DiffusionDatamodule(L.LightningDataModule):

@@ -1,20 +1,11 @@
-import os
 import torch
 import torch.nn.functional as F
-import numpy as np
-from PIL import Image
-from torch.utils.data import Dataset, DataLoader, SubsetRandomSampler
 from torch.optim import AdamW
-from torchvision import transforms
-from sklearn.model_selection import train_test_split
 
 import lightning.pytorch as pl
-from lightning.pytorch import Trainer
-from lightning.pytorch.loggers import NeptuneLogger
-from lightning.pytorch.callbacks import ModelCheckpoint
 import matplotlib.pyplot as plt
 
-from diffusers import AutoencoderKL, UNet2DConditionModel, DDPMScheduler, UNet2DModel, DDPMPipeline
+from diffusers import DDPMScheduler, UNet2DModel, DDPMPipeline
 
 class StableDiffusionModel(pl.LightningModule):
     def __init__(self, learning_rate=1e-5):
@@ -109,11 +100,11 @@ class StableDiffusionModel(pl.LightningModule):
                 first_image = images[0]
 
                 # Przygotuj grid – np. 3 wiersze x 6 kolumn (czyli 18 subplots)
-                fig, axes = plt.subplots(3, 6, figsize=(15, 8))
+                fig, axes = plt.subplots(4, 5, figsize=(15, 8))
                 axes = axes.flatten()
 
                 # Iterujemy po wszystkich 18 kanałach
-                for i in range(18):
+                for i in range(19):
                     # Wyciągamy i-ty kanał: shape (512, 512)
                     channel = first_image[..., i]
                     axes[i].imshow(channel, cmap='gray')
