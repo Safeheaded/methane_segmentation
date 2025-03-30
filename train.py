@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
-from terrain_segmentation.models.default_model import DefaultSegmentationModel
-from terrain_segmentation.models.u_2_net_model import U2NET
-from terrain_segmentation.models.acc_unet import AccUnet
+from methane_segmentation.models.default_model import DefaultSegmentationModel
+from methane_segmentation.models.u_2_net_model import U2NET
+from methane_segmentation.models.acc_unet import AccUnet
 import typer
-from terrain_segmentation.utils.utils import train
+from methane_segmentation.utils.utils import train
 
 load_dotenv()
 

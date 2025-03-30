@@ -7,8 +7,8 @@ from torch.utils.data import DataLoader
 from captum.attr import GradientShap, IntegratedGradients
 from captum.attr import visualization as viz
 from torchmetrics.classification import BinaryAccuracy
-from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
-from terrain_segmentation.models.default_model import DefaultSegmentationModel
+from methane_segmentation.datamodules.default_datamodule import DefaultDatamodule
+from methane_segmentation.models.default_model import DefaultSegmentationModel
 import torch.multiprocessing
 from itertools import product
 import pandas as pd

@@ -1,5 +1,6 @@
 from diffusers import StableDiffusionPipeline
 from methane_segmentation.datamodules.diffusion_datamodule import DiffusionDatamodule
+from methane_segmentation.datamodules.dogs_datamodule import DogsDataModule
 from methane_segmentation.models.StableDiffusionModel import StableDiffusionModel
 from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import ModelCheckpoint
@@ -17,9 +18,9 @@ def main():
     torch.set_default_dtype(torch.float32)  # Na GPU
     neptune_project_name = os.getenv('SD_NEPTUNE_PROJECT_NAME')
     neptune_api_key = os.getenv('NEPTUNE_API_TOKEN')
-    EPOCHS = 20
-    BATCH_SIZE = 2
-    learning_rate = 1e-4
+    EPOCHS = 10
+    BATCH_SIZE = 8
+    learning_rate = 5e-4
 
     neptune_logger = NeptuneLogger(
         api_key=neptune_api_key,     # Twój klucz API
@@ -38,7 +39,7 @@ def main():
     neptune_logger.log_hyperparams(PARAMS)
 
 
-    data_module = DiffusionDatamodule(batch_size=BATCH_SIZE)
+    data_module = DogsDataModule(batch_size=BATCH_SIZE)
     model = StableDiffusionModel(learning_rate=learning_rate)
     checkpoint_id = neptune_logger._run_short_id
     checkpoint_callback = ModelCheckpoint(

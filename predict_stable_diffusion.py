@@ -1,6 +1,6 @@
-from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
+from methane_segmentation.datamodules.default_datamodule import DefaultDatamodule
 import matplotlib.pyplot as plt
-from terrain_segmentation.models.StableDiffusionModel import StableDiffusionModel
+from methane_segmentation.models.StableDiffusionModel import StableDiffusionModel
 from diffusers import AutoencoderKL, UNet2DConditionModel, DDPMScheduler, UNet2DModel, DDPMPipeline
 import torch
 

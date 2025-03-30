@@ -3,7 +3,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import NeptuneLogger
 from datetime import datetime
 from lightning.pytorch import LightningModule, Trainer
-from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
+from methane_segmentation.datamodules.default_datamodule import DefaultDatamodule
 
 
 def prepare_logger(model_name: str, epochs: int, batch_size: int, learning_rate: float) -> tuple[NeptuneLogger, ModelCheckpoint]:

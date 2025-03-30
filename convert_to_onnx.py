@@ -1,7 +1,7 @@
 import torch
 import matplotlib.pyplot as plt
-from terrain_segmentation.models.default_model import DefaultSegmentationModel
-from terrain_segmentation.datasets.default_dataset import DefaultDataset
+from methane_segmentation.models.default_model import DefaultSegmentationModel
+from methane_segmentation.datasets.default_dataset import DefaultDataset
 import argparse
 
 def main(input: str, output: str):

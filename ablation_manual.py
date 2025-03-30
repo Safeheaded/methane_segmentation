@@ -1,7 +1,7 @@
 from captum.attr import FeatureAblation
-from terrain_segmentation.models.default_model import DefaultSegmentationModel
+from methane_segmentation.models.default_model import DefaultSegmentationModel
 import torch
-from terrain_segmentation.datamodules.default_datamodule import DefaultDatamodule
+from methane_segmentation.datamodules.default_datamodule import DefaultDatamodule
 
 def main():
     T_MAX = 50
