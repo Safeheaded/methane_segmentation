@@ -10,7 +10,6 @@ import albumentations.pytorch.transforms
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 import pandas as pd
-import numpy as np
 
 class DiffusionDatamodule(L.LightningDataModule):
     def __init__(self, data_dir="datasets", batch_size=4, num_workers=8, exclude_from_input=[]):
@@ -27,10 +26,14 @@ class DiffusionDatamodule(L.LightningDataModule):
         self.augmentations = A.Compose([
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
+            # A.Resize(width=128, height=128, p=1.0),
+            A.Normalize(mean=0.5, std=0.5),
             A.pytorch.transforms.ToTensorV2(),
         ])
 
         self.transforms = A.Compose([
+            # A.Resize(width=128, height=128, p=1.0),
+            A.Normalize(mean=0.5, std=0.5),
             A.pytorch.transforms.ToTensorV2(),
         ])
 
