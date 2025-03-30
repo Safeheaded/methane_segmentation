@@ -392,3 +392,5 @@ runs
 trained_models
 .neptune
 trained_models_stable_diffusion
+oxford_pets_dogs_only_binarized_split
+ddpm-ema-flowers-64
