@@ -1,0 +1,25 @@
+[project]
+name = "methane-segmentation"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "accelerate>=1.5.2",
+    "albumentations>=2.0.5",
+    "diffusers>=0.32.2",
+    "dotenv>=0.9.9",
+    "imagecodecs>=2025.3.30",
+    "lightning>=2.5.1",
+    "matplotlib>=3.10.1",
+    "neptune>=1.13.0",
+    "numpy>=2.2.4",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.6.1",
+    "segmentation-models-pytorch>=0.4.0",
+    "tifffile>=2025.3.30",
+    "torch>=2.6.0",
+    "torchaudio>=2.6.0",
+    "torchvision>=0.21.0",
+    "transformers>=4.50.3",
+]
