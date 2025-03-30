@@ -4,10 +4,11 @@ from lightning.pytorch.loggers import NeptuneLogger
 from datetime import datetime
 from lightning.pytorch import LightningModule, Trainer
 from methane_segmentation.datamodules.default_datamodule import DefaultDatamodule
+from methane_segmentation.datamodules.diffusion_datamodule import DiffusionDatamodule
 
 
 def prepare_logger(model_name: str, epochs: int, batch_size: int, learning_rate: float) -> tuple[NeptuneLogger, ModelCheckpoint]:
-    neptune_project_name = os.getenv("NEPTUNE_PROJECT_NAME")
+    neptune_project_name = os.getenv(f"NEPTUNE_NAME_{model_name.upper()}")
     neptune_api_key = os.getenv("NEPTUNE_API_TOKEN")
     EPOCHS = epochs
     BATCH_SIZE = batch_size
@@ -43,17 +44,17 @@ def prepare_logger(model_name: str, epochs: int, batch_size: int, learning_rate:
     )
     return neptune_logger, checkpoint_callback
 
-def train(model: LightningModule, epochs: int, batch_size: int, learning_rate: float, accelerator = "gpu"):
+def train(model: LightningModule, epochs: int, batch_size: int, learning_rate: float, accelerator = "gpu", model_name: str = "unet"):
     # Prepare the logger and checkpoint callback
     neptune_logger, checkpoint_callback = prepare_logger(
-        model_name="AccUnet",
+        model_name=model_name,
         epochs=epochs,
         batch_size=batch_size,
         learning_rate=learning_rate
     )
 
     # Initialize the data module and model
-    data_module = DefaultDatamodule(batch_size=batch_size)
+    data_module = DefaultDatamodule(batch_size=batch_size) if model_name != "diffussion" else DiffusionDatamodule(batch_size=batch_size)
 
     # Create the trainer
     trainer = Trainer(

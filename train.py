@@ -4,6 +4,7 @@ from methane_segmentation.models.u_2_net_model import U2NET
 from methane_segmentation.models.acc_unet import AccUnet
 import typer
 from methane_segmentation.utils.utils import train
+from methane_segmentation.models.StableDiffusionModel import StableDiffusionModel
 
 load_dotenv()
 
@@ -18,7 +19,7 @@ def unet(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
 
     model = DefaultSegmentationModel.get_Unet(learning_rate=learning_rate).to("mps")
 
-    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate)
+    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="unet")
 
 
 @app.command()
@@ -29,7 +30,7 @@ def acc_unet(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4
 
     model = AccUnet(learning_rate=learning_rate).to("mps")
 
-    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate)
+    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="accUnet")
 
 @app.command()
 def u2net(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
@@ -39,7 +40,7 @@ def u2net(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
 
     model = U2NET.get_U2Net(learning_rate=learning_rate).to("mps")
 
-    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate)
+    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="u2net")
 
 @app.command()
 def segformer(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
@@ -49,7 +50,17 @@ def segformer(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-
 
     model = DefaultSegmentationModel.get_segformer(learning_rate=learning_rate).to("mps")
 
-    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate)
+    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="segformer")
+
+@app.command()
+def diffusion(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
+    """
+    Train a Diffusion model.
+    """
+
+    model = StableDiffusionModel(learning_rate=learning_rate).to("mps")
+
+    train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="diffussion")
 
 
 if __name__ == "__main__":
