@@ -1,12 +1,5 @@
 from torch.utils.data import Dataset
-import os
-from PIL import Image
 import numpy as np
-import torch
-from segmentation_models_pytorch.encoders import get_preprocessing_fn
-import matplotlib.pyplot as plt
-import rasterio.windows
-import pandas as pd
 from pathlib import Path
 import tifffile
 
