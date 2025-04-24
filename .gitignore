@@ -394,3 +394,5 @@ trained_models
 trained_models_stable_diffusion
 oxford_pets_dogs_only_binarized_split
 ddpm-ema-flowers-64
+
+!methane_segmentation/datasets
