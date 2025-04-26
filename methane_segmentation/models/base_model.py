@@ -5,8 +5,8 @@ import segmentation_models_pytorch as smp
 from torch.optim import lr_scheduler
 import matplotlib.pyplot as plt
 
-class BaseModel(ABC, pl.LightningModule):
 
+class BaseModel(ABC, pl.LightningModule):
     training_step_outputs = []
     validation_step_outputs = []
     test_step_outputs = []
@@ -17,9 +17,11 @@ class BaseModel(ABC, pl.LightningModule):
         self.input_channels = input_channels
         self.learning_rate = learning_rate
 
+    def set_tmax(self, new_tmax: int):
+        self.T_MAX = new_tmax
+
     @abstractmethod
-    def forward(self, x):
-        ...
+    def forward(self, x): ...
 
     def training_step(self, batch, batch_idx):
         train_loss_info = self.shared_step(batch)
@@ -27,7 +29,7 @@ class BaseModel(ABC, pl.LightningModule):
         self.training_step_outputs.append(train_loss_info)
 
         return train_loss_info
-    
+
     def on_train_epoch_end(self):
         self.shared_epoch_end(self.training_step_outputs, "train")
         # empty set output list
@@ -40,14 +42,14 @@ class BaseModel(ABC, pl.LightningModule):
         self.validation_step_outputs.append(valid_loss_info)
 
         return valid_loss_info
-    
+
     def on_validation_epoch_end(self):
         self.shared_epoch_end(self.validation_step_outputs, "valid")
         self.validation_step_outputs.clear()
         return
-    
+
     def test_step(self, batch, batch_idx):
-        test_loss_info = self.shared_step(batch, 'test')
+        test_loss_info = self.shared_step(batch, "test")
         self.test_step_outputs.append(test_loss_info)
         return test_loss_info
 
@@ -68,7 +70,7 @@ class BaseModel(ABC, pl.LightningModule):
                 "frequency": 1,
             },
         }
-    
+
     def shared_step(self, batch, stage="train"):
         inputs, labels = batch
         outputs = self(inputs)
@@ -93,26 +95,26 @@ class BaseModel(ABC, pl.LightningModule):
             "fn": fn,
             "tn": tn,
         }
-    
+
     def upload_images(self, outputs, labels):
         amount = outputs.shape[0]
         for i in range(amount):
             fig, axes = plt.subplots(1, 2, figsize=(10, 5))
             # Ground Truth
-            axes[0].imshow(labels.cpu()[i, :, :], cmap='gray')
+            axes[0].imshow(labels.cpu()[i, :, :], cmap="gray")
             axes[0].set_title("Ground Truth")
-            axes[0].axis('off')
+            axes[0].axis("off")
             # Prediction
-            axes[1].imshow(outputs.cpu()[i, :, :], cmap='gray')
+            axes[1].imshow(outputs.cpu()[i, :, :], cmap="gray")
             axes[1].set_title("Prediction")
-            axes[1].axis('off')
+            axes[1].axis("off")
             # plt.tight_layout()
             # Zapis wykresu do bufora
             # Przesłanie obrazu za pomocą loggera
             self.logger.experiment[f"test/prediction"].append(fig)
             fig.clear()
             plt.close(fig)
-    
+
     def shared_epoch_end(self, outputs, stage):
         # aggregate step metics
         tp = torch.cat([x["tp"] for x in outputs])

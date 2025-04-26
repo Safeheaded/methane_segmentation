@@ -5,9 +5,12 @@ from datetime import datetime
 from lightning.pytorch import LightningModule, Trainer
 from methane_segmentation.datamodules.default_datamodule import DefaultDatamodule
 from methane_segmentation.datamodules.diffusion_datamodule import DiffusionDatamodule
+from methane_segmentation.models.base_model import BaseModel
 
 
-def prepare_logger(model_name: str, epochs: int, batch_size: int, learning_rate: float) -> tuple[NeptuneLogger, ModelCheckpoint]:
+def prepare_logger(
+    model_name: str, epochs: int, batch_size: int, learning_rate: float
+) -> tuple[NeptuneLogger, ModelCheckpoint]:
     neptune_project_name = os.getenv(f"NEPTUNE_NAME_{model_name.upper()}")
     neptune_api_key = os.getenv("NEPTUNE_API_TOKEN")
     EPOCHS = epochs
@@ -44,17 +47,33 @@ def prepare_logger(model_name: str, epochs: int, batch_size: int, learning_rate:
     )
     return neptune_logger, checkpoint_callback
 
-def train(model: LightningModule, epochs: int, batch_size: int, learning_rate: float, accelerator = "gpu", model_name: str = "unet"):
+
+def train(
+    model: BaseModel,
+    epochs: int,
+    batch_size: int,
+    learning_rate: float,
+    accelerator="gpu",
+    model_name: str = "unet",
+):
     # Prepare the logger and checkpoint callback
     neptune_logger, checkpoint_callback = prepare_logger(
         model_name=model_name,
         epochs=epochs,
         batch_size=batch_size,
-        learning_rate=learning_rate
+        learning_rate=learning_rate,
     )
 
     # Initialize the data module and model
-    data_module = DefaultDatamodule(batch_size=batch_size) if model_name != "diffussion" else DiffusionDatamodule(batch_size=batch_size)
+    data_module = (
+        DefaultDatamodule(batch_size=batch_size)
+        if model_name != "diffussion"
+        else DiffusionDatamodule(batch_size=batch_size)
+    )
+
+    T_MAX = data_module.get_train_dataset_num()
+
+    model.set_tmax(T_MAX)
 
     # Create the trainer
     trainer = Trainer(
@@ -62,7 +81,7 @@ def train(model: LightningModule, epochs: int, batch_size: int, learning_rate: f
         accelerator=accelerator,
         callbacks=[checkpoint_callback],
         logger=neptune_logger,
-        precision='bf16-mixed'
+        precision="bf16-mixed",
     )
 
     # Train the model
