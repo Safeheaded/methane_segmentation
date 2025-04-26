@@ -43,7 +43,7 @@ class DefaultDatamodule(L.LightningDataModule):
         self.inputs.sort()
 
     def get_train_dataset_num(self) -> int:
-        return int(len(self.get_dirs()) * 0.8)
+        return int(len(self.load_data_dirs(self.dataset_location)) * 0.8)
 
 
     def setup(self, stage=None):

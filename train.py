@@ -17,7 +17,7 @@ def unet(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
     Train a U-Net model.
     """
 
-    model = DefaultSegmentationModel.get_Unet(learning_rate=learning_rate).to("mps")
+    model = DefaultSegmentationModel.get_Unet(learning_rate=learning_rate).to("cuda")
 
     train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="unet")
 
@@ -28,7 +28,7 @@ def acc_unet(batch_size: int = 8, epochs: int = 100, learning_rate: float = 1e-3
     Train an AccU-Net model.
     """
 
-    model = AccUnet(learning_rate=learning_rate).to("mps")
+    model = AccUnet(learning_rate=learning_rate).to("cuda")
 
     train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="accUnet")
 
@@ -38,7 +38,7 @@ def u2net(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
     Train a U2Net model.
     """
 
-    model = U2NET.get_U2Net(learning_rate=learning_rate).to("mps")
+    model = U2NET.get_U2Net(learning_rate=learning_rate).to("cuda")
 
     train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="u2net")
 
@@ -48,7 +48,7 @@ def segformer(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-
     Train a Segformer model.
     """
 
-    model = DefaultSegmentationModel.get_segformer(learning_rate=learning_rate).to("mps")
+    model = DefaultSegmentationModel.get_segformer(learning_rate=learning_rate).to("cuda")
 
     train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="segformer")
 
@@ -58,7 +58,7 @@ def diffusion(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-
     Train a Diffusion model.
     """
 
-    model = StableDiffusionModel(learning_rate=learning_rate).to("mps")
+    model = StableDiffusionModel(learning_rate=learning_rate).to("cuda")
 
     train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="diffussion")
 
