@@ -33,7 +33,7 @@ class StableDiffusionModel(pl.LightningModule):
                 "UpBlock2D",
                 "UpBlock2D",
             ),
-        ).to('mps')
+        )
         self.noise_scheduler = DDPMScheduler(num_train_timesteps=1000, beta_schedule='linear')
         self.learning_rate = learning_rate
 

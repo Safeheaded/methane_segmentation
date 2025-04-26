@@ -23,10 +23,10 @@ def download_file(url):
     datasets_dir.is_dir() or datasets_dir.mkdir(parents=True, exist_ok=True)
     filename = datasets_dir / filename
 
-    if os.listdir(datasets_dir):
-        raise Exception(
-            "Folder is not empty. Please remove files from the folder before downloading new ones."
-        )
+    # if os.listdir(datasets_dir):
+    #     raise Exception(
+    #         "Folder is not empty. Please remove files from the folder before downloading new ones."
+    #     )
 
     total_size = int(response.headers.get("content-length", 0))
     chunk_size = 8192
