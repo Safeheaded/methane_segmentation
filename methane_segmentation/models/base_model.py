@@ -59,7 +59,7 @@ class BaseModel(ABC, pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.T_MAX, eta_min=1e-5)
+        scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=720, eta_min=1e-5)
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
@@ -135,9 +135,9 @@ class BaseModel(ABC, pl.LightningModule):
         # Empty images influence a lot on per_image_iou and much less on dataset_iou.
         dataset_iou = smp.metrics.iou_score(tp, fp, fn, tn, reduction="micro")
         self.log(f"metrics/epoch/{stage}/dataset_iou", dataset_iou, prog_bar=True)
-        metrics = {
-            f"{stage}_per_image_iou": per_image_iou,
-            f"{stage}_dataset_iou": dataset_iou,
-        }
+        # metrics = {
+        #     f"{stage}_per_image_iou": per_image_iou,
+        #     f"{stage}_dataset_iou": dataset_iou,
+        # }
 
-        self.log_dict(metrics, prog_bar=True)
+        # self.log_dict(metrics, prog_bar=True)
