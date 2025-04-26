@@ -90,19 +90,18 @@ class U2NET(BaseModel):
         super().__init__(input_channels=18, learning_rate=learning_rate, T_MAX=T_MAX)
         self.out_ch = out_ch
         self._make_layers(cfgs)
-        self.loss = nn.BCEWithLogitsLoss(size_average=True)
+        self.loss = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
+        # self.loss = nn.BCELoss(size_average=True)
         self.save_hyperparameters()
 
     def muti_bce_loss_fusion(self, d0, d1, d2, d3, d4, d5, d6, labels_v):
-        labels_v = labels_v.unsqueeze(1)
-
-        loss0 = self.loss(d0, labels_v)
-        loss1 = self.loss(d1, labels_v)
-        loss2 = self.loss(d2, labels_v)
-        loss3 = self.loss(d3, labels_v)
-        loss4 = self.loss(d4, labels_v)
-        loss5 = self.loss(d5, labels_v)
-        loss6 = self.loss(d6, labels_v)
+        loss0 = self.loss(d0.squeeze(1), labels_v)
+        loss1 = self.loss(d1.squeeze(1), labels_v)
+        loss2 = self.loss(d2.squeeze(1), labels_v)
+        loss3 = self.loss(d3.squeeze(1), labels_v)
+        loss4 = self.loss(d4.squeeze(1), labels_v)
+        loss5 = self.loss(d5.squeeze(1), labels_v)
+        loss6 = self.loss(d6.squeeze(1), labels_v)
 
         loss = loss0 + loss1 + loss2 + loss3 + loss4 + loss5 + loss6
         # print("l0: %3f, l1: %3f, l2: %3f, l3: %3f, l4: %3f, l5: %3f, l6: %3f\n"%(loss0.data.item(),loss1.data.item(),loss2.data.item(),loss3.data.item(),loss4.data.item(),loss5.data.item(),loss6.data.item()))
