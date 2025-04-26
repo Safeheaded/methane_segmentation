@@ -23,7 +23,7 @@ def unet(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
 
 
 @app.command()
-def acc_unet(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
+def acc_unet(batch_size: int = 8, epochs: int = 100, learning_rate: float = 1e-3):
     """
     Train an AccU-Net model.
     """
