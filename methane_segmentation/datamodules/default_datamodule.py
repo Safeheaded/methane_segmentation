@@ -2,15 +2,11 @@ from torch.utils.data import DataLoader
 import os
 import lightning as L
 from ..datasets.default_dataset import DefaultDataset
-from .helpers import raw_bands_available
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 import albumentations as A
 import albumentations.pytorch.transforms
-import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
 import pandas as pd
-import numpy as np
 
 class DefaultDatamodule(L.LightningDataModule):
     def __init__(self, data_dir="datasets", batch_size=4, num_workers=8, exclude_from_input=[]):
