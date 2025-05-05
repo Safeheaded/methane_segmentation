@@ -42,6 +42,9 @@ class StableDiffusionModel(pl.LightningModule):
         # self.vae.encoder.conv_in = torch.nn.Conv2d(18, 128, kernel_size=3, stride=1, padding=1)
         # self.vae.decoder.conv_out = torch.nn.Conv2d(128, 18, kernel_size=3, stride=1, padding=1)
 
+    def set_tmax(self, new_tmax: int):
+        self.T_MAX = new_tmax
+
     def forward(self, images, timesteps):
         noise_pred = self.unet(images, timesteps).sample
         return noise_pred
