@@ -36,7 +36,7 @@ def prepare_logger(
     current_date = datetime.now().strftime("%d%m%Y%f")
     checkpoint_id = neptune_logger._run_short_id if neptune_logger else current_date
     checkpoint_callback = ModelCheckpoint(
-        monitor="metrics/epoch/valid/dataset_iou",
+        monitor="training/val_loss" if model_name == "diffusion" else "metrics/epoch/valid/dataset_iou",
         dirpath="trained_models",
         filename=f"{checkpoint_id}_model",
         save_top_k=2,
