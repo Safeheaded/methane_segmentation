@@ -47,6 +47,10 @@ class DiffusionDatamodule(L.LightningDataModule):
         self.inputs.sort()
 
 
+    def get_train_dataset_num(self) -> int:
+        return int(len(self.load_data_dirs(self.dataset_location)) * 0.8)
+
+
     def setup(self, stage=None):
         data_dirs = self.load_data_dirs(self.dataset_location)
 
