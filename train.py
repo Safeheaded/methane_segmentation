@@ -53,12 +53,12 @@ def segformer(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-
     train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="segformer")
 
 @app.command()
-def diffusion(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4):
+def diffusion(batch_size: int = 8, epochs: int = 100, learning_rate: float = 2e-4, ckpt_path: str = None):
     """
     Train a Diffusion model.
     """
 
-    model = StableDiffusionModel(learning_rate=learning_rate).to("cuda")
+    model = StableDiffusionModel(learning_rate=learning_rate).to("cuda") if ckpt_path is None else StableDiffusionModel.load_from_checkpoint(ckpt_path, learning_rate=learning_rate).to("cuda")
 
     train(model, epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, model_name="diffussion")
 
