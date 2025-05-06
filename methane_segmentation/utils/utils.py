@@ -3,6 +3,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import NeptuneLogger
 from datetime import datetime
 from lightning.pytorch import LightningModule, Trainer
+import lightning.pytorch as pl
 from methane_segmentation.datamodules.default_datamodule import DefaultDatamodule
 from methane_segmentation.datamodules.diffusion_datamodule import DiffusionDatamodule
 from methane_segmentation.models.base_model import BaseModel
@@ -79,7 +80,7 @@ def train(
     trainer = Trainer(
         max_epochs=epochs,
         accelerator=accelerator,
-        callbacks=[checkpoint_callback],
+        callbacks=[checkpoint_callback, UploadCheckpointsToNeptune(checkpoint_callback)],
         logger=neptune_logger,
         precision="bf16-mixed",
     )
@@ -89,3 +90,20 @@ def train(
 
     # Test the model
     trainer.test(model=model, datamodule=data_module)
+
+class UploadCheckpointsToNeptune(pl.Callback):
+    def __init__(self, checkpoint_callback):
+        self.checkpoint_callback = checkpoint_callback
+
+    def on_train_end(self, trainer, pl_module):
+        run = trainer.logger.experiment  # Neptune run
+
+        # Upload best checkpoint
+        best_ckpt = self.checkpoint_callback.best_model_path
+        if best_ckpt and os.path.exists(best_ckpt):
+            run["model/best"].upload(best_ckpt)
+
+        # Upload last checkpoint
+        last_ckpt = self.checkpoint_callback.last_model_path
+        if last_ckpt and os.path.exists(last_ckpt):
+            run["model/last"].upload(last_ckpt)
