@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  methane_segmentation:
+    build: .
+    container_name: methane_segmentation
+    volumes:
+      - type: bind
+        source: ./trained_models
+        target: /app/trained_models
+      - type: bind
+        source: ./output
+        target: /app/output
+      - type: bind
+        source: ./datasets
+        target: /app/datasets
+    network_mode: host
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
+    # environment:
+    #   - NVIDIA_VISIBLE_DEVICES=all
+    stdin_open: true
+    tty: true

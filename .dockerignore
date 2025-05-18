@@ -1,0 +1,7 @@
+output
+trained_models
+
+.venv
+datasets
+
+image_log
